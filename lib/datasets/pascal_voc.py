@@ -27,12 +27,7 @@ class pascal_voc(imdb):
         self._devkit_path = self._get_default_path() if devkit_path is None \
                             else devkit_path
         self._data_path = os.path.join(self._devkit_path, 'VOC' + self._year)
-        self._classes = ('__background__', # always index 0
-                         'aeroplane', 'bicycle', 'bird', 'boat',
-                         'bottle', 'bus', 'car', 'cat', 'chair',
-                         'cow', 'diningtable', 'dog', 'horse',
-                         'motorbike', 'person', 'pottedplant',
-                         'sheep', 'sofa', 'train', 'tvmonitor')
+        self._classes = ('__background__','car')
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()
@@ -127,7 +122,7 @@ class pascal_voc(imdb):
             print '{} ss roidb loaded from {}'.format(self.name, cache_file)
             return roidb
 
-        if int(self._year) == 2007 or self._image_set != 'test':
+        if int(self._year) == 2017 or self._image_set != 'test':
             gt_roidb = self.gt_roidb()
             ss_roidb = self._load_selective_search_roidb(gt_roidb)
             roidb = imdb.merge_roidbs(gt_roidb, ss_roidb)
@@ -140,7 +135,7 @@ class pascal_voc(imdb):
         return roidb
 
     def rpn_roidb(self):
-        if int(self._year) == 2007 or self._image_set != 'test':
+        if int(self._year) == 2017 or self._image_set != 'test':
             gt_roidb = self.gt_roidb()
             rpn_roidb = self._load_rpn_roidb(gt_roidb)
             roidb = imdb.merge_roidbs(gt_roidb, rpn_roidb)
@@ -187,8 +182,17 @@ class pascal_voc(imdb):
         objs = tree.findall('object')
         if not self.config['use_diff']:
             # Exclude the samples labeled as difficult
-            non_diff_objs = [
-                obj for obj in objs if int(obj.find('difficult').text) == 0]
+            # non_diff_objs = [
+            #     obj for obj in objs if int(obj.find('difficult').text) == 0]
+            non_diff_objs = []
+            for obj in objs:
+                if obj.find('difficult') == None:
+                    difficult = obj.find('Difficult').text
+                else:
+                    difficult = obj.find('difficult').text
+                if int(difficult) == 0:
+                    non_diff_objs.append(obj)
+
             # if len(non_diff_objs) != len(objs):
             #     print 'Removed {} difficult objects'.format(
             #         len(objs) - len(non_diff_objs))
@@ -203,6 +207,7 @@ class pascal_voc(imdb):
 
         # Load object bounding boxes into a data frame.
         for ix, obj in enumerate(objs):
+            print 'name',obj.find('name').text
             bbox = obj.find('bndbox')
             # Make pixel indexes 0-based
             x1 = float(bbox.find('xmin').text) - 1
@@ -339,6 +344,6 @@ class pascal_voc(imdb):
 
 if __name__ == '__main__':
     from datasets.pascal_voc import pascal_voc
-    d = pascal_voc('trainval', '2007')
+    d = pascal_voc('trainval', '2017')
     res = d.roidb
     from IPython import embed; embed()

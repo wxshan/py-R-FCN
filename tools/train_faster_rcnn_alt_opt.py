@@ -45,7 +45,7 @@ def parse_args():
                         default=None, type=str)
     parser.add_argument('--imdb', dest='imdb_name',
                         help='dataset to train on',
-                        default='voc_2007_trainval', type=str)
+                        default='voc_2017_trainval', type=str)
     parser.add_argument('--set', dest='set_cfgs',
                         help='set config keys', default=None,
                         nargs=argparse.REMAINDER)
